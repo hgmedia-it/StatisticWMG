@@ -3,6 +3,7 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
+using StatisticWMG.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,16 +25,16 @@ namespace StatisticWMG
             try
             {
                 var service = UserCredential(); 
-                IList<Songs> dataList = GetDataFromFile(filePath);
+                IList<SpotifyInfo> dataList = GetDataFromFile(filePath);
                 List<Google.Apis.Sheets.v4.Data.ValueRange> data = new List<Google.Apis.Sheets.v4.Data.ValueRange>();
                 ValueRange valueDataRange = new ValueRange() { MajorDimension = "ROWS" };
                 valueDataRange.Values = new List<IList<object>>();
-                valueDataRange.Values.Add(new List<object> { "STT" ,"TRACK NAME", "CODE", "TRACK ARTIST", "GENRE", "REGION", "LINK YOUTUBE", "YEAR", DateTime.Now.ToString("MM/dd/yyyy")});
+                valueDataRange.Values.Add(new List<object> { "STT" ,"TRACK NAME", "TRACK ID SPOTIFY", "ALBUM ID", "CODE", "TRACK ARTIST", "GENRE", "REGION", "YEAR", DateTime.Now.ToString("MM/dd/yyyy")});
                 valueDataRange.Range = range;
                 for (int i = 0; i< dataList.Count; i++)
                 {
-                    IList<object> list = new List<object> { i+1 , dataList[i].TrackName, dataList[i].Code, dataList[i].TrackArtist,dataList[i].Genres, 
-                        dataList[i].Region,dataList[i].YoutubeUrl, dataList[i].ReleaseYear, dataList[i].YoutubeViewCount };
+                    IList<object> list = new List<object> { i+1 , dataList[i].TrackTitle, dataList[i].TrackId, dataList[i].AlbumId,dataList[i].Code, 
+                        dataList[i].Artists,dataList[i].Genres, dataList[i].Country, dataList[i].ReleaseDate, dataList[i].StreamCount };
                     valueDataRange.Values.Add(list);
 
                 }
@@ -51,12 +52,12 @@ namespace StatisticWMG
                 Console.WriteLine(ex.Message);
             }
         }
-        public static void InserViewCountToNewColumn(List<Songs> songs,string columnName)
+        public static void InserViewCountToNewColumn(List<SpotifyInfo> songs,string columnName)
         {
             try
             {
                 var service = UserCredential();
-                IList<Songs> dataList = songs;
+                IList<SpotifyInfo> dataList = songs;
                 List<Google.Apis.Sheets.v4.Data.ValueRange> data = new List<Google.Apis.Sheets.v4.Data.ValueRange>();
                 ValueRange valueDataRange = new ValueRange() { MajorDimension = "ROWS" };
                 valueDataRange.Values = new List<IList<object>>() { };
@@ -65,7 +66,7 @@ namespace StatisticWMG
                 valueDataRange.Range = range + "!" + columnName +"1:" + columnName + max.ToString();
                 for (int i = 0; i < dataList.Count; i++)
                 {
-                    IList<object> list = new List<object> { dataList[i].YoutubeViewCount };
+                    IList<object> list = new List<object> { dataList[i].StreamCount };
                     valueDataRange.Values.Add(list);
                 }
                 data.Add(valueDataRange);
@@ -110,28 +111,6 @@ namespace StatisticWMG
                     ApplicationName = ApplicationName,
                 });
                 return service;
-                //UserCredential credential;
-
-                //using (var stream =
-                //    new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
-                //{
-                //    // The file token.json stores the user's access and refresh tokens, and is created
-                //    // automatically when the authorization flow completes for the first time.
-                //    string credPath = "token.json";
-                //    credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                //        GoogleClientSecrets.Load(stream).Secrets,
-                //        Scopes,
-                //        "user",
-                //        CancellationToken.None,
-                //        new FileDataStore(credPath, true)).Result;
-                //    Console.WriteLine("Credential file saved to: " + credPath);
-                //}
-                //var service = new SheetsService(new BaseClientService.Initializer()
-                //{
-                //    HttpClientInitializer = credential,
-                //    ApplicationName = ApplicationName,
-                //});
-                //return service;
             }
             catch (Exception ex)
             {
@@ -140,42 +119,43 @@ namespace StatisticWMG
 
             }
         }
-        private static List<Songs> GetDataFromFile(string filePath)
+        private static List<SpotifyInfo> GetDataFromFile(string filePath)
         {
-            var songs = new List<Songs>();
+            var songs = new List<SpotifyInfo>();
             var lines = File.ReadAllLines(filePath);
             foreach (var line in lines)
             {
                 var parts = line.Split(new string[] { "\t" }, StringSplitOptions.None);
-                songs.Add(new Songs
+                songs.Add(new SpotifyInfo
                 {
-                    TrackName = parts[0],
-                    Code = parts[1],
-                    TrackArtist = parts[2],
-                    Genres = parts[3],
-                    Region = parts[4],
-                    YoutubeUrl = parts[5],
-                    ReleaseYear = parts[6],
-                    YoutubeViewCount = long.Parse(parts[7])
+                    TrackTitle = parts[0],
+                    TrackId = parts[1],
+                    AlbumId = parts[2],
+                    Code = parts[3],
+                    Artists = parts[4],
+                    Genres = parts[5],
+                    Country = parts[6],
+                    ReleaseDate = parts[7],
+                    StreamCount = long.Parse(parts[8])
                 });
             }
 
             return songs;
         }
-        public static void AppendNewSongs(List<Songs> listSongs)
+        public static void AppendNewSongs(List<SpotifyInfo> listSongs,int countRows)
         {
             try
             {
                 var service = UserCredential();
-                IList<Songs> dataList = listSongs;
+                IList<SpotifyInfo> dataList = listSongs;
                 List<Google.Apis.Sheets.v4.Data.ValueRange> data = new List<Google.Apis.Sheets.v4.Data.ValueRange>();
                 ValueRange valueDataRange = new ValueRange() { MajorDimension = "ROWS" };
                 valueDataRange.Values = new List<IList<object>>();
                 valueDataRange.Range = range;
                 for (int i = 0; i < dataList.Count; i++)
                 {
-                    IList<object> list = new List<object> { i+1 , dataList[i].TrackName, dataList[i].Code, dataList[i].TrackArtist,dataList[i].Genres,
-                        dataList[i].Region,dataList[i].YoutubeUrl, dataList[i].ReleaseYear };
+                    IList<object> list = new List<object> { countRows + (i+1) , dataList[i].TrackTitle, dataList[i].TrackId, dataList[i].AlbumId,dataList[i].Code,
+                        dataList[i].Artists,dataList[i].Genres, dataList[i].Country, dataList[i].ReleaseDate };
                     valueDataRange.Values.Add(list);
 
                 }

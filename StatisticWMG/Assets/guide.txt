@@ -1,0 +1,19 @@
+﻿https://github.com/evilarceus/sp-playcount-librespot
+
+Requirements
+Java 8+
+Spotify Account (recommended to create another account)
+
+Installation
+Compile this repository or download an executable JAR.
+Run the JAR: java -jar sp-playcount-librespot.jar <spotify_username> <spotify_password>
+You only need to provide your Spotify username and password once. After creds.json has been generated, the username and password are not required in the launch arguments.
+Make any appropriate configuration changes in the generated config.toml file (see "Configuration" section for config options).
+Run the JAR again: java -jar sp-playcount-librespot.jar
+
+Usage
+Simply make a GET request to the endpoint with the query string albumid set to the ID of a Spotify album (ex. if the URL is https://open.spotify.com/album/6Lq1lrCfkpxKa4jCo5gKWr or spotify:album:6Lq1lrCfkpxKa4jCo5gKWr, the string is 6Lq1lrCfkpxKa4jCo5gKWr)
+
+Curl example: (endpoint is /albumPlayCount)
+$ curl https://example.com/albumPlayCount?albumid=6Lq1lrCfkpxKa4jCo5gKWr
+{"success": true, "data": {"uri":"spotify:album:6Lq1lrCfkpxKa4jCo5gKWr","name":"Good Faith","cover":{"uri":"https://i.scdn.co/image/ab67616d00001e02dc384e6d13983fe1cd415ade"},"year":2019,"track_count":10,"discs":[{"number":1 ...
