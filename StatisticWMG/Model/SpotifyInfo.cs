@@ -19,5 +19,9 @@ namespace StatisticWMG.Model
         public string Code { get; set; }
         public string Genres { get; set; }
         public string Country { get; set; }
+        public string CreateDate { get; set; }
+        public string LinkSpotify { get; set; }
+        public string ViralArtist { get; set; }
+        public string Popularity { get; set; }
     }
 }
