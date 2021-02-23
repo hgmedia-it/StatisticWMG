@@ -25,7 +25,7 @@ namespace StatisticWMG
         //For SPOTIFY API
         private static string _clientId = "0db429af58024a668d74cb1b0c373c8e";
         private static string _clientSecretKey = "b86a76f29b964afd9a7e58d06102459c";
-        private static string _accessToken = "BQCefBBd7iOicNqOKBuCzX9XQx_gqh9oNlRZ0ALxpsXSRiSCYR_SxUymkd9mZZHeOPGEdT6uie30cF20qDbbuRfwDSggjW_x3NnoPon2wQDZ0p8Ou1mcoK8izjje5Jn_yj4nn-eNyoMkYDvKNbUybWQ5kXQTNSbR5ZtOOkKGfebUvZJmflzrL7W0UtILMxj01npcB3axUvODMDeQxOCxmN_QLaGVzHbyxJeD9MelIbq9VpWy5pc-8EWFM6dxTTvIU87pL5cmGTXsxYJn9Z8u0AU5cyFNc5GevbE";
+        private static string _accessToken = "BQCo5MaaZAI2XVKw2FMpqP9Nbeds6IC1ytESuu9AUAfp8cx1Ojv1NOHC6ZhHII_XzpbEcmjP1sQsN7n-9lDxhk0c-ZZmXZ6RaiG7NBHIzaGlhWqmE68h1tX7hkBC-UfD1DUmzaqgLfs1neXz7p-_XoJQCJGThgsBP7_BaUD0P6_XBm3Ui2z8IuG5gK_F0MQPtcNIygjtwQafmY7xeYJ3SpO7D2T3Wv3Z8bteZ9CcgPMzdNwdqkFY_W1Dt2xlUa5sGmOKa4fhYpJTIgiyDu6gPX7BJBVkyL6ZlD0";
         private static int _groupSp = 50;
         private static string _playlistWMG = "7qmlWD30wui2qRZTYuub3x";
 
@@ -63,21 +63,6 @@ namespace StatisticWMG
                         }
                     }
                 }
-                var lines = new List<string>();
-                foreach (var song in songs)
-                {
-                    song.Country = GetCountryFromGenre(song.Genres);
-                    lines.Add(song.TrackTitle + "\t"
-                                + song.Code + "\t"
-                                + song.ArtistId + "\t"
-                                + song.Genres + "\t"
-                                + song.Country);
-                }
-                if (File.Exists("genre.txt"))
-                {
-                    File.Delete("genre.txt");
-                }
-                File.AppendAllLines("genre.txt", lines);
                 return songs;
             }
             catch (Exception ex)

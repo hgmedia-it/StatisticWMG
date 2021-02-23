@@ -18,55 +18,30 @@ namespace StatisticWMG
     {
         static int SP_GROUP_SIZE = 50;
         static int YTB_GROUP_SIZE = 1000;
-        static string spotifyAllResult = "spotify_all_result.txt";
-        static string column = "P";
-        static bool isFirstTimeRun = false;
+        static string spotifyNewSongs = "spotify_new_song.txt";
+        static string spotifyAllSongs = "spotify_all_song.txt";
+        static string ytbViewResult = "ytb_view_result.txt";
+        static int numberOfOldSongs = 0;
+        //column mới trong sheet để cập nhật stream count
+        static string column = "S";
         static void Main(string[] args)
         {
-            
-            //Youtube();
-            //PhanloaiGenre();
-            //AddTrackToPlaylist();
-            //GetInfoSpotifyFromCode();
-            //if (isFirstTimeRun)
-            //{
-                //RunFirstTime();
-            //    UpdateDataToGoogleSheet.InsertDataAll(spotifyAllResult);
-            //}
-            //else
-            //{
-            RunSecondTime();
-            //}
+
+            UpdateSpotifySongsToWMGStatistic();
+            GetViewOfSongFromYoutube();
 
         }
-
-        static void RunFirstTime()
-        {
-            List<SpotifyInfo> listSongsFirst = GetDataFromGoogleSheet.GetAllSongsFromStaticSheet();//GetDataFromGoogleSheet.GetSongsFromWMGSourceGoogleSheet();
-            var listSongAfter = new List<SpotifyInfo>();
-            DeleteFile(spotifyAllResult);
-            var spGroupCount = (int)Math.Ceiling((double)listSongsFirst.Count / (double)SP_GROUP_SIZE);
-            for (var i = 0; i < spGroupCount; i++)
-            {
-                var groupSongs = listSongsFirst.Skip(i * SP_GROUP_SIZE).Take(SP_GROUP_SIZE).ToList();
-                Console.WriteLine($"Running {i}...");
-                var list = SpotifyService.GetSpotifyInfoAsync(groupSongs, spotifyAllResult).GetAwaiter().GetResult();
-                listSongAfter.AddRange(list);
-                Console.WriteLine($"Done. Wating 5s...");
-                Thread.Sleep(10 * 500);
-            }
-            SpotifyService.GetArtistGenresAndRegion(listSongAfter);
-        }
-        static void RunSecondTime()
+        static void UpdateSpotifySongsToWMGStatistic()
         {
             List<SpotifyInfo> listSongsFromStatistic = GetDataFromGoogleSheet.GetAllSongsFromStaticSheet();
+            numberOfOldSongs = listSongsFromStatistic.Count();
             List<SpotifyInfo> listSongsFromSource = WMGSource.GetAllSongFromServer();
             List<SpotifyInfo> listSongAfter = new List<SpotifyInfo>();
             foreach (var item in listSongsFromSource)
             {
                 if (string.IsNullOrEmpty(item.Code))
                 {
-                    if(listSongsFromStatistic.Any(p => p.TrackTitle.ToLower().Equals(item.TrackTitle.ToLower()) && p.Artists.ToLower().Equals(item.Artists.ToLower())) == false)
+                    if (listSongsFromStatistic.Any(p => p.TrackTitle.ToLower().Equals(item.TrackTitle.ToLower()) && p.Artists.ToLower().Equals(item.Artists.ToLower())) == false)
                     {
                         listSongAfter.Add(item);
                     }
@@ -80,11 +55,10 @@ namespace StatisticWMG
                 }
 
             }
-
             bool check = false;
             var listNew = new List<SpotifyInfo>();
             var songAfterGetGenre = new List<SpotifyInfo>();
-            // //kiểm tra xem có bài mới không, nếu có thì lấy dữ liệu về và chạy api để lấy genre, track id, album id, year, stream count
+            //kiểm tra xem có bài mới không, nếu có thì lấy dữ liệu về và chạy api để lấy genre, track id, album id, year, stream count
             if (listSongAfter.Count > 0)
             {
                 var groupCount = (int)Math.Ceiling((double)listSongAfter.Count / (double)SP_GROUP_SIZE);
@@ -92,66 +66,52 @@ namespace StatisticWMG
                 {
                     var groupSongs = listSongAfter.Skip(i * SP_GROUP_SIZE).Take(SP_GROUP_SIZE).ToList();
                     Console.WriteLine($"Running {i}...");
-                    var list = SpotifyService.GetSpotifyInfoAsync(groupSongs, spotifyAllResult).GetAwaiter().GetResult();
+                    var list = SpotifyService.GetSpotifyInfoAsync(groupSongs, spotifyNewSongs).GetAwaiter().GetResult();
                     listNew.AddRange(list);
                     Console.WriteLine($"Done. Wating 2s...");
                     Thread.Sleep(5000);
                 }
+                //lấy thể loại của song trên spotify
                 var genres = SpotifyService.GetArtistGenresAndRegion(listNew);
                 songAfterGetGenre.AddRange(genres);
                 check = true;
             }
+
+            // add bài mới vào sheet bao gồm các trường : tên, code, nhạc sỹ, genre, quốc gia
             if (check)
             {
-                UpdateDataToGoogleSheet.AppendNewSongs(songAfterGetGenre, listSongsFromStatistic.Count);
+                UpdateDataToGoogleSheet.AppendNewSongs(songAfterGetGenre,listSongsFromStatistic.Count);
             }
 
-            var ytbGroupCount = (int)Math.Ceiling((double)listSongsFromStatistic.Count / (double)SP_GROUP_SIZE);
-            var listAll = new List<SpotifyInfo>();
-            for (var i = 0; i < ytbGroupCount; i++)
-            {
-                var groupSongs = listSongsFromStatistic.Skip(i * SP_GROUP_SIZE).Take(SP_GROUP_SIZE).ToList();
-                Console.WriteLine($"Running {i}...");
-                var list = SpotifyService.GetSpotifyInfoAsync(groupSongs, "Final_final.txt", false).GetAwaiter().GetResult();
-                listAll.AddRange(list);
-                Console.WriteLine($"Done. Wating 2s...");
-                Thread.Sleep(5000);
-            }
-            if (check)
-            {
-                listAll.AddRange(songAfterGetGenre);
-            }
-            UpdateDataToGoogleSheet.InserViewCountToNewColumn(listAll, column);
-            UpdateDataToGoogleSheet.InserViewCountToPopularityColumn(listAll, "I");
+            ////get stream count của cả bài cũ + mới
+            //var ytbGroupCount = (int)Math.Ceiling((double)listSongsFromStatistic.Count / (double)SP_GROUP_SIZE);
+            //var listAll = new List<SpotifyInfo>();
+            //for (var i = 0; i < ytbGroupCount; i++)
+            //{
+            //    var groupSongs = listSongsFromStatistic.Skip(i * SP_GROUP_SIZE).Take(SP_GROUP_SIZE).ToList();
+            //    Console.WriteLine($"Running {i}...");
+            //    var list = SpotifyService.GetSpotifyInfoAsync(groupSongs, spotifyAllSongs, false).GetAwaiter().GetResult();
+            //    listAll.AddRange(list);
+            //    Console.WriteLine($"Done. Wating 2s...");
+            //    Thread.Sleep(5000);
+            //}
+            //if (check)
+            //{
+            //    listAll.AddRange(songAfterGetGenre);
+            //}
+            //// insert stream count và popularity của all songs
+            //UpdateDataToGoogleSheet.InserViewCountToNewColumn(listAll, column);
+            //UpdateDataToGoogleSheet.InserViewCountToPopularityColumn(listAll, "I");
         }
-
-        static void AddTrackToPlaylist()
-        {
-            List<SpotifyInfo> listsongs = GetDataFromGoogleSheet.GetSongs();
-            List<string> trackList = new List<string>();
-            foreach (var item in listsongs)
-            {
-                if (!string.IsNullOrEmpty(item.LinkSpotify))
-                {
-                    var song = item.LinkSpotify.Split(new string[] { "=" }, StringSplitOptions.None);
-                    trackList.Add(song[1]);
-                }
-            }
-            var group = (int)Math.Ceiling((double)trackList.Count / (double)100);
-            for (var i = 0; i < group; i++)
-            {
-                var groupSongs = trackList.Skip(i * 100).Take(100).ToList();
-                Console.WriteLine($"Running {i}...");
-                var list = SpotifyService.AddTrack(groupSongs);
-                Console.WriteLine($"Done. Wating 2s...");
-                Thread.Sleep(10000);
-            }
-        }
-
-        static void Youtube()
+        static void GetViewOfSongFromYoutube()
         {
             List<SpotifyInfo> listSongsFromStatistic = GetDataFromGoogleSheet.GetAllSongsFromStaticSheet();
-            listSongsFromStatistic = listSongsFromStatistic.Skip(31732).ToList();
+
+            //kiểm tra có bài mới không, nếu có thì bắt đầu lấy link youtube + view 
+            if (numberOfOldSongs > 0 && numberOfOldSongs < listSongsFromStatistic.Count)
+            {
+                listSongsFromStatistic = listSongsFromStatistic.Skip(numberOfOldSongs).ToList();
+            }
             var totalSongs = new List<Songs>();
             foreach (var item in listSongsFromStatistic)
             {
@@ -161,101 +121,24 @@ namespace StatisticWMG
                 song.Code = item.Code;
                 totalSongs.Add(song);
             }
-            if (File.Exists("ytb_view_result.txt"))
+            if (File.Exists(ytbViewResult))
             {
-                File.Delete("ytb_view_result.txt");
+                File.Delete(ytbViewResult);
             }
             var ytbGroupCount = (int)Math.Ceiling((double)totalSongs.Count / (double)YTB_GROUP_SIZE);
+            List<Songs> songs = new List<Songs>();
             for (var i = 0; i < ytbGroupCount; i++)
             {
                 var groupSongs = totalSongs.Skip(i * YTB_GROUP_SIZE).Take(YTB_GROUP_SIZE).ToList();
                 Console.WriteLine($"Running {i}...");
-                var proxy = Proxy.RandomProxy();
-                var client = Proxy.ChangeProxy(proxy);
-                YoutubeServices.GetYoutubeInfoAsync(groupSongs, client, $"ytb_view_result.txt").GetAwaiter().GetResult();
+                var account = Proxy.RandomProxy();
+                var client = Proxy.ChangeProxy(account);
+                songs = YoutubeServices.GetYoutubeInfoAsync(groupSongs, client, ytbViewResult).GetAwaiter().GetResult();
                 Console.WriteLine($"Done. Wating 10s...");
                 Thread.Sleep(10 * 1000);
             }
-        }
-        static void ViralAritst()
-        {
-            List<SpotifyInfo> listSongsFromStatistic = GetDataFromGoogleSheet.GetAllSongsFromStaticSheet();
-            List<string> listArtist = new List<string>();
-            foreach(var item in listSongsFromStatistic)
-            {
-                if(!string.IsNullOrEmpty(item.Artists) || !item.Artists.ToLower().Equals("đang cập nhật"))
-                {
-                    if (!listArtist.Any(x => x.Contains(item.Artists)))
-                    {
-                        listArtist.Add(item.Artists);
-                    }
-                }
-            }
-            Dictionary<string, List<long>> dictionary = new Dictionary<string, List<long>>();
-            Dictionary<string, string> dictionaryAfter = new Dictionary<string, string>();
-            foreach(var item in listArtist)
-            {
-                var list = listSongsFromStatistic.Where(x => x.Artists.Equals(item)).ToList().Select(i => i.StreamCount).ToList();
-                dictionary.Add(item, list);
-            }
-            foreach(var item in dictionary)
-            {
-                if(item.Value.Any(i => i >= 100000000))
-                {
-                    dictionaryAfter.Add(item.Key, "Có");
-                }else if(item.Value.Any(i => i >= 100000000) == false && item.Value.Any(i=> i < 100000000 && i >= 10000000))
-                {
-                    dictionaryAfter.Add(item.Key, "Trung Bình");
-                }
-                else
-                {
-                    dictionaryAfter.Add(item.Key, "Không");
-                }
-            }
-            foreach(var item in dictionaryAfter)
-            {
-                var list = listSongsFromStatistic.Where(x => x.Artists.Equals(item.Key)).ToList();
-                if(list != null && list.Count > 0)
-                {
-                    foreach (var song in list)
-                    {
-                        song.ViralArtist = item.Value;
-                    }
-                }
-            }
-
-            var lines = new List<string>();
-            foreach(var song in listSongsFromStatistic)
-            {
-                if (!string.IsNullOrEmpty(song.ViralArtist))
-                {
-                    lines.Add(song.ViralArtist);
-                }
-                else
-                {
-                    lines.Add("Không");
-                }
-            }
-            if (File.Exists("Artist.txt"))
-            {
-                File.Delete("Artist.txt");
-            }
-            File.AppendAllLines("Artist.txt", lines);
-        }
-        static void DeleteFile(string filePath)
-        {
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            UpdateDataToGoogleSheet.InsertLinkYoutube(songs,numberOfOldSongs);
+            UpdateDataToGoogleSheet.InsertViewYoutube(songs,numberOfOldSongs);
         }
     }
 }

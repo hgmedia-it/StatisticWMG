@@ -44,7 +44,6 @@ namespace StatisticWMG
                         if(taskResult != null)
                         {
                             task.Key.YoutubeUrl = string.IsNullOrEmpty(taskResult.videoId) ? "" : $"https://www.youtube.com/watch?v={taskResult.videoId}";
-                            task.Key.ReleaseYear = string.IsNullOrEmpty(taskResult.year) ? "" : taskResult.year;
                             task.Key.YoutubeViewCount = taskResult.viewCount;
                         }
 
@@ -66,7 +65,6 @@ namespace StatisticWMG
                 lines.Add(song.TrackName + "\t"
                     + song.TrackArtist + "\t"
                     + song.YoutubeUrl + "\t"
-                    + song.ReleaseYear + "\t"
                     + song.YoutubeViewCount + "\t");
             }
             File.AppendAllLines(fileResultName, lines);
@@ -81,7 +79,6 @@ namespace StatisticWMG
                 {
                     client = new WebClient();
                 }
-                //WebClient client = new WebClient();
                 var searchQuery = "";
                 if (string.IsNullOrEmpty(trackArtist) || trackArtist.Trim().Equals("Đang cập nhật"))
                 {
@@ -139,8 +136,7 @@ namespace StatisticWMG
                     return new Item
                     {
                         videoId = "",
-                        viewCount = 0,
-                        year = ""
+                        viewCount = 0
                     };
                 }
                 if (!string.IsNullOrEmpty(trackArtist) && !trackArtist.Trim().Equals("Đang cập nhật"))
@@ -167,37 +163,14 @@ namespace StatisticWMG
                                 if (viewCount.ToString().Contains(","))
                                 {
                                     viewCount = viewCount.ToString().Replace(",", "");
-                                }
-                                var publishYear = "";
-                                try
+                                }else if (viewCount.ToString().Contains("."))
                                 {
-                                    //publishYear = videoJsons[i].videoRenderer.publishedTimeText.simpleText;
-                                    //if (!string.IsNullOrEmpty(publishYear))
-                                    //{
-                                    //    byte[] bytes = Encoding.Default.GetBytes(publishYear);
-                                    //    publishYear = Encoding.UTF8.GetString(bytes);
-
-                                    //    if (publishYear.Contains("tuần") || publishYear.Contains("tháng") || publishYear.Contains("ngày")
-                                    //        || publishYear.Contains("day") || publishYear.Contains("month") || publishYear.Contains("week"))
-                                    //    {
-                                    //        publishYear = DateTime.Now.Year.ToString();
-                                    //    }
-                                    //    else
-                                    //    {
-                                    //        string[] lines = publishYear.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                                    //        publishYear = (int.Parse(DateTime.Now.Year.ToString()) - int.Parse(lines[0])).ToString();
-                                    //    }
-                                    //}
-                                }
-                                catch
-                                {
-                                    publishYear = "";//GetVideoDateTime(videoId).GetAwaiter().GetResult();
+                                    viewCount = viewCount.ToString().Replace(".", "");
                                 }
                                 return new Item
                                 {
                                     videoId = videoId,
-                                    viewCount = long.Parse(viewCount),
-                                    year = publishYear
+                                    viewCount = long.Parse(viewCount)
                                 };
                             }
                         }
@@ -232,36 +205,10 @@ namespace StatisticWMG
                             {
                                 viewCount = viewCount.ToString().Replace(",", "");
                             }
-                            var publishYear = "";
-                            try
-                            {
-                                //publishYear = videoJsons[i].videoRenderer.publishedTimeText.simpleText;
-                                //if (!string.IsNullOrEmpty(publishYear))
-                                //{
-                                //    byte[] bytes = Encoding.Default.GetBytes(publishYear);
-                                //    publishYear = Encoding.UTF8.GetString(bytes);
-
-                                //    if (publishYear.Contains("tuần") || publishYear.Contains("tháng") || publishYear.Contains("ngày")
-                                //        || publishYear.Contains("day") || publishYear.Contains("month") || publishYear.Contains("week"))
-                                //    {
-                                //        publishYear = DateTime.Now.Year.ToString();
-                                //    }
-                                //    else
-                                //    {
-                                //        string[] lines = publishYear.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                                //        publishYear = (int.Parse(DateTime.Now.Year.ToString()) - int.Parse(lines[0])).ToString();
-                                //    }
-                                //}
-                            }
-                            catch
-                            {
-                                publishYear = "";//GetVideoDateTime(videoId).GetAwaiter().GetResult();
-                            }
                             return new Item
                             {
                                 videoId = videoId,
-                                viewCount = long.Parse(viewCount),
-                                year = publishYear
+                                viewCount = long.Parse(viewCount)
                             };
                         }
                     }
@@ -292,36 +239,10 @@ namespace StatisticWMG
                         {
                             viewCount = viewCount.ToString().Replace(",", "");
                         }
-                        var publishYear = "";
-                        try
-                        {
-                            //publishYear = videoJsons[i].videoRenderer.publishedTimeText.simpleText;
-                            //if (!string.IsNullOrEmpty(publishYear))
-                            //{
-                            //    byte[] bytes = Encoding.Default.GetBytes(publishYear);
-                            //    publishYear = Encoding.UTF8.GetString(bytes);
-
-                            //    if (publishYear.Contains("tuần") || publishYear.Contains("tháng") || publishYear.Contains("ngày")
-                            //        || publishYear.Contains("day") || publishYear.Contains("month") || publishYear.Contains("week"))
-                            //    {
-                            //        publishYear = DateTime.Now.Year.ToString();
-                            //    }
-                            //    else
-                            //    {
-                            //        string[] lines = publishYear.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                            //        publishYear = (int.Parse(DateTime.Now.Year.ToString()) - int.Parse(lines[0])).ToString();
-                            //    }
-                            //}
-                        }
-                        catch
-                        {
-                            publishYear = "";//GetVideoDateTime(videoId).GetAwaiter().GetResult();
-                        }
                         return new Item
                         {
                             videoId = videoId,
-                            viewCount = long.Parse(viewCount),
-                            year = publishYear
+                            viewCount = long.Parse(viewCount)
                         };
                     }
                     catch (Exception ex)
@@ -332,8 +253,7 @@ namespace StatisticWMG
                 return new Item
                 {
                     videoId = "",
-                    viewCount = 0,
-                    year = ""
+                    viewCount = 0
                 };
             }
             catch (Exception ex)
@@ -341,27 +261,7 @@ namespace StatisticWMG
                 return null;
             }
         }
-        //private static async Task<string> GetVideoDateTime(string videoId)
-        //{
-        //    try
-        //    {
-        //        var proxy = Proxy.RandomProxy();
-        //        var client = Proxy.ChangeProxy(proxy);
-        //        var url = $"https://www.youtube.com/watch?v={videoId}";
-        //        string htmlStr = await client.DownloadStringTaskAsync(url);
-        //        var initDataStr = htmlStr.Substring(htmlStr.IndexOf(@"{""responseContext"""));
-        //        initDataStr = initDataStr.Substring(0, initDataStr.IndexOf("};") + 1);
-        //        var initDataJson = JsonConvert.DeserializeObject<dynamic>(initDataStr);
-        //        string metaDataJsons = (string)initDataJson.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.dateText.simpleText;
-        //        string[] lineDate = metaDataJsons.Split(new string[] { " " }, StringSplitOptions.None);
-        //        string date = lineDate[lineDate.Length - 1];
-        //        return date;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return "";
-        //    }
-        //}
+
         private static string RemoveDiacritics(string text)
         {
             try
@@ -390,7 +290,6 @@ namespace StatisticWMG
     public class Item
     {
         public string videoId { get; set; }
-        public string year { get; set; }
         public long viewCount { get; set; }
     }
 

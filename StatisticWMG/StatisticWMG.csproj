@@ -71,9 +71,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ListSongHetHan.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Compile Include="Model\SpotifyInfo.cs" />
     <Compile Include="Service\Proxy.cs" />
     <Compile Include="Service\SpotifyService.cs" />
@@ -96,9 +93,6 @@
     <Folder Include="Assets\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Genre.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="ListProxy.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -23,5 +23,7 @@ namespace StatisticWMG.Model
         public string LinkSpotify { get; set; }
         public string ViralArtist { get; set; }
         public string Popularity { get; set; }
+        public string YoutubeLink { get; set; }
+        public string ViewYoutube { get; set; }
     }
 }

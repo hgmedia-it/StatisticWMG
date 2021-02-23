@@ -52,42 +52,6 @@ namespace StatisticWMG
 
             }
         }
-        public static void AddAllSongsWMGToSource(List<SpotifyInfo> songs)
-        {
-            try
-            {
-                string id = "1gVSSRpQw5XVwOcec4E0euiNHZiHXOc5HpYNGzvUWkkM";
-                string rangeSheet = "Sheet2";
-                var service = UserCredential();
-                IList<SpotifyInfo> dataList = songs;
-                List<Google.Apis.Sheets.v4.Data.ValueRange> data = new List<Google.Apis.Sheets.v4.Data.ValueRange>();
-                ValueRange valueDataRange = new ValueRange() { MajorDimension = "ROWS" };
-                valueDataRange.Values = new List<IList<object>>();
-                valueDataRange.Values.Add(new List<object> { "STT", "TRACK NAME", "CODE", "TRACK ARTIST", "CREATE DATE" });
-                valueDataRange.Range = rangeSheet;
-                for (int i = 0; i < dataList.Count; i++)
-                {
-                    IList<object> list = new List<object> { i+1 , dataList[i].TrackTitle, dataList[i].Code,
-                        dataList[i].Artists, dataList[i].CreateDate };
-                    valueDataRange.Values.Add(list);
-
-                }
-                data.Add(valueDataRange);
-
-                // TODO: Assign values to desired properties of `requestBody`:
-
-                Google.Apis.Sheets.v4.Data.BatchUpdateValuesRequest requestBody = new Google.Apis.Sheets.v4.Data.BatchUpdateValuesRequest();
-                requestBody.ValueInputOption = "USER_ENTERED";
-                requestBody.Data = data;
-                // API to update data to sheet
-                SpreadsheetsResource.ValuesResource.BatchUpdateRequest request = service.Spreadsheets.Values.BatchUpdate(requestBody, id);
-                Google.Apis.Sheets.v4.Data.BatchUpdateValuesResponse response = request.Execute();
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
         public static List<SpotifyInfo> GetAllSongFromServer()
         {
             try
@@ -152,10 +116,6 @@ namespace StatisticWMG
             {
                 return null;
             }
-        }
-        public static void Test()
-        {
-            
         }
     }
 }
