@@ -150,6 +150,65 @@ namespace StatisticWMG
 
         }
 
+
+        public static List<SpotifyInfo> GetAllSongsFromStaticSheetVN()
+        {
+            try
+            {
+                ServiceAccountCredential credential1;
+                string[] Scopes = { SheetsService.Scope.Spreadsheets };
+                string serviceAccountEmail = "trackingnewdara@quickstart-1605058837166.iam.gserviceaccount.com";
+                string jsonfile = "trackingNewData.json";
+                string spreadsheetID = "1k0G4J_HXLzOvaOvoUPHt8m7S-ogMxaeF53SE6ZfgXfo";
+                string range = "Danh sách nhạc tổng!A2:K";
+                using (Stream stream = new FileStream(@jsonfile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    credential1 = (ServiceAccountCredential)
+                        GoogleCredential.FromStream(stream).UnderlyingCredential;
+
+                    var initializer = new ServiceAccountCredential.Initializer(credential1.Id)
+                    {
+                        User = serviceAccountEmail,
+                        Key = credential1.Key,
+                        Scopes = Scopes
+                    };
+                    credential1 = new ServiceAccountCredential(initializer);
+                }
+                var serices = new SheetsService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential1,
+                    ApplicationName = ApplicationName,
+                });
+                SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum valueRenderOption = (SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum)0;
+                SpreadsheetsResource.ValuesResource.GetRequest.DateTimeRenderOptionEnum dateTimeRenderOption = (SpreadsheetsResource.ValuesResource.GetRequest.DateTimeRenderOptionEnum)0;
+
+                SpreadsheetsResource.ValuesResource.GetRequest request = serices.Spreadsheets.Values.Get(spreadsheetID, range);
+                request.ValueRenderOption = valueRenderOption;
+                request.DateTimeRenderOption = dateTimeRenderOption;
+
+                // To execute asynchronously in an async method, replace `request.Execute()` as shown:
+                Data.ValueRange response = request.Execute();
+                IList<IList<Object>> values = response.Values;
+                List<SpotifyInfo> listSongs = new List<SpotifyInfo>();
+                foreach (var item in values)
+                {
+                    if (item.Count >= 6)
+                    {
+                        SpotifyInfo song = new SpotifyInfo();
+                        song.TrackTitle = item[4].ToString();
+                        song.Artists = item[5].ToString();
+                        song.Range = "I" + (values.IndexOf(item) + 2).ToString() + ":" + "J" + (values.IndexOf(item) + 2).ToString();
+                        listSongs.Add(song);
+                    }
+                }
+                return listSongs;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
     }
     public class SongInfo
     {

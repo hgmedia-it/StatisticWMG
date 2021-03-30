@@ -82,6 +82,35 @@ namespace StatisticWMG
                 Console.WriteLine(ex.Message);
             }
         }
+
+        public static void InsertYoutubeVN(List<SpotifyInfo> songs, string range)
+        {
+            try
+            {
+                var service = UserCredential();
+                IList<IList<object>> newValues = new List<IList<object>>();
+
+                foreach (var song in songs)
+                {
+                    newValues.Add(new List<object> {
+                        song.YoutubeLink,
+                        song.ViewYoutube
+                    });
+                }
+                ValueRange newValueRage = new ValueRange();
+                newValueRage.Values = newValues;
+                newValueRage.Range = range;
+
+                SpreadsheetsResource.ValuesResource.AppendRequest wrequest = service.Spreadsheets.Values.Append(newValueRage, "1k0G4J_HXLzOvaOvoUPHt8m7S-ogMxaeF53SE6ZfgXfo", range);
+                wrequest.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.OVERWRITE;
+                wrequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                var wresponse = wrequest.Execute();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
         public static void InsertViewYoutube(List<Songs> songs, int numberOfOldSongs)
         {
             try

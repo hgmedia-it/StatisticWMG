@@ -25,5 +25,6 @@ namespace StatisticWMG.Model
         public string Popularity { get; set; }
         public string YoutubeLink { get; set; }
         public string ViewYoutube { get; set; }
+        public string Range { get; set; }
     }
 }

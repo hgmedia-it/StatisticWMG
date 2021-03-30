@@ -71,6 +71,50 @@ namespace StatisticWMG
             return songs;
         }
 
+        public static async Task<List<SpotifyInfo>> GetYoutubeInfoAsyncVN(List<SpotifyInfo> songs, WebClient client)
+        {
+            var tasks = new Dictionary<SpotifyInfo, Task<Item>>();
+            foreach (var song in songs)
+            {
+                try
+                {
+                    tasks.Add(song, CountYoutubeView(song.TrackTitle, song.Artists, client));
+                }
+                catch (Exception ex)
+                {
+                    // do nothing
+                }
+            }
+
+            await Task.WhenAll(tasks.Select(t => t.Value));
+
+            foreach (var task in tasks)
+            {
+                if (task.Value.IsCompleted)
+                {
+                    try
+                    {
+                        var taskResult = task.Value.GetAwaiter().GetResult();
+                        if (taskResult != null)
+                        {
+                            task.Key.YoutubeLink = string.IsNullOrEmpty(taskResult.videoId) ? "" : $"https://www.youtube.com/watch?v={taskResult.videoId}";
+                            task.Key.ViewYoutube = taskResult.viewCount.ToString();
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        // do nothing
+                    }
+                }
+                else
+                {
+                    // do nothing
+                }
+            }
+            return songs;
+        }
+
         public static async Task<Item> CountYoutubeView(string trackName, string trackArtist,WebClient client)
         {
             try

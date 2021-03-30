@@ -533,7 +533,7 @@ namespace StatisticWMG
                         + track.Popularity + "\t"
                         + track.StreamCount);
                 }
-                File.AppendAllLines(fileResultName, lines);
+                //File.AppendAllLines(fileResultName, lines);
                 return spotifyInfos;
             }
             catch (Exception ex)
